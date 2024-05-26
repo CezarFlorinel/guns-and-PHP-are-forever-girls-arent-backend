@@ -52,9 +52,12 @@ class Controller
             "nbf" => $currentTime, // Or $currentTime + a shorter interval if necessary
             "exp" => $currentTime + 3600, // Reducing to 1 hour for better security
             "data" => array(
-                "id" => $user->id,
+                "id" => $user->userId,
                 "username" => $user->username,
-                "email" => $user->email
+                "email" => $user->email,
+                "admin" => $user->admin,
+                "avatarId" => $user->avatarId
+
             )
         );
         $jwt = JWT::encode($payload, "fancy_key", 'HS256');
