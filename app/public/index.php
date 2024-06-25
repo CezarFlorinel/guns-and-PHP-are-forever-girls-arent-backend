@@ -39,6 +39,10 @@ $router->mount('/questionAndAnswers', function () use ($router) {
 // Define routes that do not require authentication
 $router->post('/users/login', 'UserController@login');
 
+$router->before('GET|PUT|DELETE', '/user*', 'checkJwtMiddleware');
+$router->mount('/user', function () use ($router) {
+    $router->post('/', 'UserController@createUser');
+});
 
 
 
