@@ -64,6 +64,4 @@ class QandARepository extends Repository
         }
     }
 
-
-
 }
