@@ -6,7 +6,6 @@ function checkJwtMiddleware()
 {
     // Check for the 'Authorization' header
     $headers = apache_request_headers();
-    // error_log(print_r($headers, true), 3, __DIR__ . '/../error_log.log'); // Log the input data
     $authHeader = isset($headers['Authorization']) ? $headers['Authorization'] : null;
 
     if (!$authHeader) {

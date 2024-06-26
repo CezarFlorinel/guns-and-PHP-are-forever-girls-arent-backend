@@ -66,7 +66,11 @@ class Controller
             "message" => 'Successful login',
             "token" => $jwt,
             "username" => $user->username,
-            "expiresAt" => $payload['exp']
+            "expiresAt" => $payload['exp'],
+            "admin" => $user->admin,
+            "avatarId" => $user->avatarId,
+            "userId" => $user->userId,
+            "email" => $user->email
         );
     }
 

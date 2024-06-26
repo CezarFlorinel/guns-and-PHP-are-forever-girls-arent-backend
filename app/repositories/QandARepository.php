@@ -7,7 +7,6 @@ use Models\QuestionAndAnswer;
 
 class QandARepository extends Repository
 {
-
     public function addQandA(QuestionAndAnswer $questionAndAnswer): void
     {
         try {
@@ -63,7 +62,5 @@ class QandARepository extends Repository
             echo $e;
         }
     }
-
-
 
 }

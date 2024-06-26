@@ -31,4 +31,79 @@ class UserController extends Controller
 
         $this->respond($tokenResponse);
     }
+
+    public function createUser()
+    {
+        $postedUser = $this->createObjectFromPostedJson("Models\\User");
+
+        $this->runChecks($postedUser);
+        $this->runCheckPassword($postedUser->password);
+        $this->runCheckForExistingUser($postedUser);
+
+        $user = $this->service->createNewUser($postedUser);
+
+        if (!$user) {
+            $this->respondWithError(400, "User could not be created");
+            return;
+        }
+
+        $this->respond($user);
+    }
+    public function updateUser($username)
+    {
+        $postedUser = $this->createObjectFromPostedJson("Models\\User");
+
+        $this->runChecks($postedUser);
+        $user = $this->service->updateUser($postedUser, $username);
+
+        if (!$user) {
+            $this->respondWithError(400, "User could not be updated");
+            return;
+        }
+
+        $this->respond($user);
+    }
+
+    // public function updatePassword($id, $password, $currentPassword)
+    // {
+    //     if ($this->service->updatePassword($postedUser, $id)) {
+    //         $this->respond($user);
+    //     }
+
+    //     $this->respond($user);
+    // }
+
+    private function runChecks($postedUser)
+    {
+        if ($postedUser->avatarId <= 0 || $postedUser->avatarId > 5) {
+            $this->respondWithError(400, "Avatar invalid");
+            return;
+        } else if (strlen($postedUser->username) < 3) {
+            $this->respondWithError(400, "Username must be at least 3 characters long");
+            return;
+        } else if (strlen($postedUser->email) < 6) {
+            $this->respondWithError(400, "Email must be at least 3 characters long");
+            return;
+        }
+    }
+
+    private function runCheckForExistingUser($postedUser)
+    {
+        if ($this->service->checkEmailExists($postedUser->email)) {
+            $this->respondWithError(400, "Email already exists");
+            return;
+        } else if ($this->service->checkUsernameExists($postedUser->username)) {
+            $this->respondWithError(400, "Username already exists");
+            return;
+        }
+
+    }
+
+    private function runCheckPassword($password)
+    {
+        if (strlen($password) < 8) {
+            $this->respondWithError(400, "Password must be at least 8 characters long");
+            return;
+        }
+    }
 }

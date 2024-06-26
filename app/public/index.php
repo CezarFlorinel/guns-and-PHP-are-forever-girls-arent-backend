@@ -28,8 +28,38 @@ $router->before('GET|POST|PUT|DELETE', '/products.*', 'checkJwtMiddleware');
 $router->before('GET|POST|PUT|DELETE', '/categories.*', 'checkJwtMiddleware');
 
 
+$router->before('POST|PUT|DELETE', '/questionAndAnswers.*', 'checkJwtMiddleware');
+$router->mount('/questionAndAnswers', function () use ($router) {
+    $router->get('/', 'QuestionAndAnswerController@getAll');
+    $router->post('/', 'QuestionAndAnswerController@create');
+    $router->put('/(\d+)', 'QuestionAndAnswerController@update');
+    $router->delete('/(\d+)', 'QuestionAndAnswerController@delete');
+});
+
 // Define routes that do not require authentication
 $router->post('/users/login', 'UserController@login');
+
+$router->before('GET|PUT|DELETE', '/user*', 'checkJwtMiddleware');
+$router->mount('/user', function () use ($router) {
+    $router->post('/', 'UserController@createUser');
+    $router->put('/username/(.+)', 'UserController@updateUser');
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Define routes that require JWT authentication
 $router->mount('/products', function () use ($router) {
