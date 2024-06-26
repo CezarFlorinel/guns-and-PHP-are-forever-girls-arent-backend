@@ -31,6 +31,17 @@ class UserService
     {
         return $this->repository->checkEmailExists($email);
     }
+
+    public function updateUser($user, $username)
+    {
+        return $this->repository->updateUser($user, $username);
+    }
+
+
+    public function updateUserPassword($password, $id)
+    {
+        return $this->repository->changePassword($password, $id);
+    }
 }
 
 ?>

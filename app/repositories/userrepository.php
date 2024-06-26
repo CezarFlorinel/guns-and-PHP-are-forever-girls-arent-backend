@@ -89,6 +89,42 @@ class UserRepository extends Repository
         }
     }
 
+    public function updateUser(User $user, $username): ?User
+    {
+        try {
+
+            try {
+                $userCurrent = $this->checkUsernamePassword($username, $user->password);
+                if (!$userCurrent) {
+                    return null;
+                }
+            } catch (PDOException $e) {
+                echo $e;
+            }
+
+            $stmt = $this->connection->prepare("UPDATE Users SET username = ?, email = ?, avatarId = ? WHERE username = ?");
+            $stmt->execute([$user->username, $user->email, $user->avatarId, $username]);
+
+            return $this->returnUserById($userCurrent->userId);
+
+        } catch (PDOException $e) {
+            echo $e;
+        }
+        return null;
+    }
+
+    public function changePassword($userId, $newPassword): bool
+    {
+        try {
+            $stmt = $this->connection->prepare("UPDATE Users SET password = ? WHERE userId = ?");
+            $stmt->execute([$this->hashPassword($newPassword), $userId]);
+            return true;
+        } catch (PDOException $e) {
+            echo $e;
+        }
+        return false;
+    }
+
     // hash the password 
     function hashPassword($password)
     {

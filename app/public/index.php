@@ -42,6 +42,7 @@ $router->post('/users/login', 'UserController@login');
 $router->before('GET|PUT|DELETE', '/user*', 'checkJwtMiddleware');
 $router->mount('/user', function () use ($router) {
     $router->post('/', 'UserController@createUser');
+    $router->put('/username/(.+)', 'UserController@updateUser');
 });
 
 
