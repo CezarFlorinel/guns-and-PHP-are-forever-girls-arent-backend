@@ -42,6 +42,7 @@ class UserController extends Controller
 
         $user = $this->service->createNewUser($postedUser);
 
+
         if (!$user) {
             $this->respondWithError(400, "User could not be created");
             return;
@@ -64,14 +65,27 @@ class UserController extends Controller
         $this->respond($user);
     }
 
-    // public function updatePassword($id, $password, $currentPassword)
-    // {
-    //     if ($this->service->updatePassword($postedUser, $id)) {
-    //         $this->respond($user);
-    //     }
+    public function updatePassword()
+    {
+        $json = file_get_contents('php://input');
+        $data = json_decode($json);
+        $newPassword = $data->newPassword;
+        $username = $data->username;
+        $password = $data->password;
 
-    //     $this->respond($user);
-    // }
+        $this->runCheckPassword($newPassword);
+
+        if (isset($newPassword) && isset($username) && isset($password)) {
+            if ($this->service->updateUserPassword($newPassword, $username, $password)) {
+                http_response_code(200);
+            } else {
+                $this->respondWithError(400, "Somethign went wrong, please try again.");
+            }
+
+        } else {
+            $this->respondWithError(400, "Missing password or username");
+        }
+    }
 
     private function runChecks($postedUser)
     {
