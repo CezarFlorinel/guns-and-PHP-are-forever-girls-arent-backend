@@ -36,15 +36,22 @@ $router->mount('/questionAndAnswers', function () use ($router) {
     $router->delete('/(\d+)', 'QuestionAndAnswerController@delete');
 });
 
+
 // Define routes that do not require authentication
 $router->post('/users/login', 'UserController@login');
-
 $router->before('GET|PUT|DELETE', '/user*', 'checkJwtMiddleware');
 $router->mount('/user', function () use ($router) {
     $router->post('/', 'UserController@createUser');
     $router->put('/username/(.+)', 'UserController@updateUser');
     $router->put('/update-password', 'UserController@updatePassword');
 });
+
+
+$router->before('POST|PUT|DELETE', '/modifications*', 'checkJwtMiddleware');
+$router->mount('/modifications', function () use ($router) {
+    $router->get('/', 'ModificationsController@getAll');
+});
+
 
 
 

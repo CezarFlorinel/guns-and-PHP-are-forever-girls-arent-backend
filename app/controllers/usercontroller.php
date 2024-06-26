@@ -2,6 +2,7 @@
 
 namespace Controllers;
 
+use Exception;
 use Services\UserService;
 
 
@@ -17,73 +18,89 @@ class UserController extends Controller
 
     public function login()
     {
+        try {
 
-        $postedUser = $this->createObjectFromPostedJson("Models\\User");
+            $postedUser = $this->createObjectFromPostedJson("Models\\User");
 
-        $user = $this->service->checkUsernamePassword($postedUser->username, $postedUser->password);
+            $user = $this->service->checkUsernamePassword($postedUser->username, $postedUser->password);
 
-        if (!$user) {
-            $this->respondWithError(401, "Invalid username or password");
-            return;
+            if (!$user) {
+                $this->respondWithError(401, "Invalid username or password");
+                return;
+            }
+
+            $tokenResponse = $this->generateJwt($user);
+
+            $this->respond($tokenResponse);
+        } catch (Exception $e) {
+            $this->respondWithError(500, $e->getMessage());
         }
-
-        $tokenResponse = $this->generateJwt($user);
-
-        $this->respond($tokenResponse);
     }
 
     public function createUser()
     {
-        $postedUser = $this->createObjectFromPostedJson("Models\\User");
+        try {
+            $postedUser = $this->createObjectFromPostedJson("Models\\User");
 
-        $this->runChecks($postedUser);
-        $this->runCheckPassword($postedUser->password);
-        $this->runCheckForExistingUser($postedUser);
+            $this->runChecks($postedUser);
+            $this->runCheckPassword($postedUser->password);
+            $this->runCheckForExistingUser($postedUser);
 
-        $user = $this->service->createNewUser($postedUser);
+            $user = $this->service->createNewUser($postedUser);
 
 
-        if (!$user) {
-            $this->respondWithError(400, "User could not be created");
-            return;
+            if (!$user) {
+                $this->respondWithError(400, "User could not be created");
+                return;
+            }
+
+            $this->respond($user);
+        } catch (Exception $e) {
+            $this->respondWithError(500, $e->getMessage());
         }
-
-        $this->respond($user);
     }
     public function updateUser($username)
     {
-        $postedUser = $this->createObjectFromPostedJson("Models\\User");
+        try {
+            $postedUser = $this->createObjectFromPostedJson("Models\\User");
 
-        $this->runChecks($postedUser);
-        $user = $this->service->updateUser($postedUser, $username);
+            $this->runChecks($postedUser);
+            $user = $this->service->updateUser($postedUser, $username);
 
-        if (!$user) {
-            $this->respondWithError(400, "User could not be updated");
-            return;
+            if (!$user) {
+                $this->respondWithError(400, "User could not be updated");
+                return;
+            }
+
+            $this->respond($user);
+        } catch (Exception $e) {
+            $this->respondWithError(500, $e->getMessage());
         }
-
-        $this->respond($user);
     }
 
     public function updatePassword()
     {
-        $json = file_get_contents('php://input');
-        $data = json_decode($json);
-        $newPassword = $data->newPassword;
-        $username = $data->username;
-        $password = $data->password;
+        try {
+            $json = file_get_contents('php://input');
+            $data = json_decode($json);
+            $newPassword = $data->newPassword;
+            $username = $data->username;
+            $password = $data->password;
 
-        $this->runCheckPassword($newPassword);
+            $this->runCheckPassword($newPassword);
 
-        if (isset($newPassword) && isset($username) && isset($password)) {
-            if ($this->service->updateUserPassword($newPassword, $username, $password)) {
-                http_response_code(200);
+            if (isset($newPassword) && isset($username) && isset($password)) {
+                if ($this->service->updateUserPassword($newPassword, $username, $password)) {
+                    http_response_code(200);
+                } else {
+                    $this->respondWithError(400, "Somethign went wrong, please try again.");
+                }
+
             } else {
-                $this->respondWithError(400, "Somethign went wrong, please try again.");
+                $this->respondWithError(400, "Missing password or username");
             }
-
-        } else {
-            $this->respondWithError(400, "Missing password or username");
+        } catch (Exception $e) {
+            $this->respondWithError(500, $e->getMessage());
         }
     }
 
