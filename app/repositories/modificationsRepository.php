@@ -7,10 +7,12 @@ use Models\Modification;
 
 class ModificationsRepository extends Repository
 {
-    public function getModifications(): array
+    public function getModifications(int $offset, int $limit): array
     {
         try {
-            $stmt = $this->connection->prepare('SELECT * FROM Modification');
+            $stmt = $this->connection->prepare('SELECT * FROM Modification LIMIT :limit OFFSET :offset');
+            $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+            $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
             $stmt->execute();
             $modifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
             return array_map(function ($modification) {
@@ -25,6 +27,19 @@ class ModificationsRepository extends Repository
         } catch (PDOException $e) {
             echo $e;
             return [];
+        }
+    }
+
+    public function getTotalModificationsCount(): int
+    {
+        try {
+            $stmt = $this->connection->prepare('SELECT COUNT(*) as count FROM Modification');
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return (int) $result['count'];
+        } catch (PDOException $e) {
+            echo $e;
+            return 0;
         }
     }
 

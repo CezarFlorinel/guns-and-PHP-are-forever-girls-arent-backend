@@ -13,13 +13,19 @@ class ModificationsService
     {
         $this->repository = new ModificationsRepository();
     }
-
-    public function getModifications()
+    public function getModifications(int $page, int $limit): array
     {
-        $modifications = $this->repository->getModifications();
+        $offset = ($page - 1) * $limit;
+        $modifications = $this->repository->getModifications($offset, $limit);
+        $totalItems = $this->repository->getTotalModificationsCount();
+
         foreach ($modifications as $modification) {
             $modification->imagePath = EncodeImage::encodeImageToBase64($modification->imagePath);
         }
-        return $modifications;
+
+        return [
+            'modifications' => $modifications,
+            'totalItems' => $totalItems
+        ];
     }
 }
