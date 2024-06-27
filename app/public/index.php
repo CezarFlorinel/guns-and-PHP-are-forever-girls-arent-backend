@@ -52,6 +52,11 @@ $router->mount('/modifications', function () use ($router) {
     $router->get('/', 'ModificationsController@getAll');
 });
 
+$router->before('POST|PUT|DELETE', '/guns*', 'checkJwtMiddleware');
+$router->mount('/guns', function () use ($router) {
+    $router->get('/', 'GunController@getGunsToDisplayInGunsPage');
+});
+
 
 
 

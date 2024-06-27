@@ -53,30 +53,34 @@ class GunRepository extends Repository
     }
     public function getGunsToDisplayInGunsPage()
     {
-        $stmt = $this->connection->prepare('SELECT * FROM Guns WHERE showInGunsPage = 1');
-        $stmt->execute();
-        $guns = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        return array_map(function ($gunData) {
-            // Assuming TypeOfGuns is an enum and 'from' throws an exception if the value is not valid.
-            $typeOfGun = TypeOfGuns::tryFrom($gunData['type']) ?? throw new \InvalidArgumentException("Invalid gun type");
+        try {
+            $stmt = $this->connection->prepare('SELECT * FROM Guns WHERE showInGunsPage = 1');
+            $stmt->execute();
+            $guns = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return array_map(function ($gunData) {
+                // Assuming TypeOfGuns is an enum and 'from' throws an exception if the value is not valid.
+                $typeOfGun = TypeOfGuns::tryFrom($gunData['type']) ?? throw new \InvalidArgumentException("Invalid gun type");
 
-            $gun = new Gun(
-                $gunData['gunId'],
-                $gunData['userId'],
-                $gunData['gunName'],
-                $gunData['gunDescription'],
-                $gunData['countryOfOrigin'],
-                $gunData['gunEstimatedPrice'],
-                $typeOfGun, // Now correctly an instance of TypeOfGuns
-                $gunData['gunImagePath'],
-                $gunData['soundPath'],
-                $gunData['showInGunsPage'],
-                $gunData['year'] ?? 0
-            );
+                $gun = new Gun(
+                    $gunData['gunId'],
+                    $gunData['userId'],
+                    $gunData['gunName'],
+                    $gunData['gunDescription'],
+                    $gunData['countryOfOrigin'],
+                    $gunData['gunEstimatedPrice'],
+                    $typeOfGun, // Now correctly an instance of TypeOfGuns
+                    $gunData['gunImagePath'],
+                    $gunData['soundPath'],
+                    $gunData['showInGunsPage'],
+                    $gunData['year'] ?? 0
+                );
 
-            return $gun;
+                return $gun;
 
-        }, $guns);
+            }, $guns);
+        } catch (PDOException $e) {
+            echo $e;
+        }
     }
 
     public function getGunById(int $gunId)
@@ -220,6 +224,8 @@ class GunRepository extends Repository
 
                 return $gun;
             }, $guns);
+        } catch (PDOException $e) {
+            echo $e;
         }
     }
 
