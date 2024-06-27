@@ -11,78 +11,6 @@ class GunRepository extends Repository
 
     // -------------------------- get methods --------------------------
 
-    public function getIDsOfGunsOwnedByUser(int $userId)
-    {
-        try {
-            $stmt = $this->connection->prepare('SELECT gunId FROM Guns WHERE userId = :userId');
-            $stmt->bindParam(':userId', $userId);
-            $stmt->execute();
-            return $stmt->fetchAll(PDO::FETCH_COLUMN);
-        } catch (PDOException $e) {
-            echo $e;
-        }
-    }
-    public function getGuns()
-    {
-        try {
-            $stmt = $this->connection->prepare('SELECT * FROM Guns');
-            $stmt->execute();
-            $guns = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            return array_map(function ($gun) {
-                $typeOfGun = TypeOfGuns::tryFrom($gun['type']) ?? throw new \InvalidArgumentException("Invalid gun type");
-
-                $gunData = new Gun(
-                    $gun['gunId'],
-                    $gun['userId'],
-                    $gun['gunName'],
-                    $gun['gunDescription'],
-                    $gun['countryOfOrigin'],
-                    $gun['gunEstimatedPrice'],
-                    $typeOfGun,
-                    $gun['gunImagePath'],
-                    $gun['soundPath'],
-                    $gun['showInGunsPage'],
-                    $gun['year'] ?? 0
-                );
-                return $gunData;
-
-            }, $guns);
-        } catch (PDOException $e) {
-            echo $e;
-        }
-    }
-    public function getGunsToDisplayInGunsPage()
-    {
-        try {
-            $stmt = $this->connection->prepare('SELECT * FROM Guns WHERE showInGunsPage = 1');
-            $stmt->execute();
-            $guns = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            return array_map(function ($gunData) {
-                // Assuming TypeOfGuns is an enum and 'from' throws an exception if the value is not valid.
-                $typeOfGun = TypeOfGuns::tryFrom($gunData['type']) ?? throw new \InvalidArgumentException("Invalid gun type");
-
-                $gun = new Gun(
-                    $gunData['gunId'],
-                    $gunData['userId'],
-                    $gunData['gunName'],
-                    $gunData['gunDescription'],
-                    $gunData['countryOfOrigin'],
-                    $gunData['gunEstimatedPrice'],
-                    $typeOfGun, // Now correctly an instance of TypeOfGuns
-                    $gunData['gunImagePath'],
-                    $gunData['soundPath'],
-                    $gunData['showInGunsPage'],
-                    $gunData['year'] ?? 0
-                );
-
-                return $gun;
-
-            }, $guns);
-        } catch (PDOException $e) {
-            echo $e;
-        }
-    }
-
     public function getGunById(int $gunId)
     {
         try {
@@ -117,6 +45,140 @@ class GunRepository extends Repository
         }
     }
 
+    public function getGuns()
+    {
+        try {
+            $stmt = $this->connection->prepare('SELECT * FROM Guns');
+            $stmt->execute();
+            $guns = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return array_map(function ($gun) {
+                $typeOfGun = TypeOfGuns::tryFrom($gun['type']) ?? throw new \InvalidArgumentException("Invalid gun type");
+
+                $gunData = new Gun(
+                    $gun['gunId'],
+                    $gun['userId'],
+                    $gun['gunName'],
+                    $gun['gunDescription'],
+                    $gun['countryOfOrigin'],
+                    $gun['gunEstimatedPrice'],
+                    $typeOfGun,
+                    $gun['gunImagePath'],
+                    $gun['soundPath'],
+                    $gun['showInGunsPage'],
+                    $gun['year'] ?? 0
+                );
+                return $gunData;
+
+            }, $guns);
+        } catch (PDOException $e) {
+            echo $e;
+        }
+    }
+
+    #region getGunsToDisplayInGunsPage
+    public function getGunsToDisplayInGunsPage(int $offset, int $limit): array
+    {
+        try {
+            $stmt = $this->connection->prepare('SELECT * FROM Guns WHERE showInGunsPage = 1 LIMIT :limit OFFSET :offset');
+            $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+            $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+            $stmt->execute();
+            $guns = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return array_map(function ($gunData) {
+                // Assuming TypeOfGuns is an enum and 'from' throws an exception if the value is not valid.
+                $typeOfGun = TypeOfGuns::tryFrom($gunData['type']) ?? throw new \InvalidArgumentException("Invalid gun type");
+
+                $gun = new Gun(
+                    $gunData['gunId'],
+                    $gunData['userId'],
+                    $gunData['gunName'],
+                    $gunData['gunDescription'],
+                    $gunData['countryOfOrigin'],
+                    $gunData['gunEstimatedPrice'],
+                    $typeOfGun, // Now correctly an instance of TypeOfGuns
+                    $gunData['gunImagePath'],
+                    $gunData['soundPath'],
+                    $gunData['showInGunsPage'],
+                    $gunData['year'] ?? 0
+                );
+
+                return $gun;
+
+            }, $guns);
+        } catch (PDOException $e) {
+            echo $e;
+            return [];
+        }
+    }
+
+    public function getTotalGunsToDisplayInGunsPage(): int
+    {
+        try {
+            $stmt = $this->connection->prepare('SELECT COUNT(*) as count FROM Guns WHERE showInGunsPage = 1');
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return (int) $result['count'];
+        } catch (PDOException $e) {
+            echo $e;
+            return 0;
+        }
+    }
+
+    #endregion
+
+    #region getGunsToDisplayInFavouritesPage
+
+    public function getFavouriteGunsByUserID(int $userId): array
+    {
+        $arrayIds = array();
+        $guns = array();
+        try {
+            $stmt = $this->connection->prepare('SELECT * FROM Favourite WHERE userId = :userId');
+            $stmt->bindParam(':userId', $userId);
+            $stmt->execute();
+            $favourites = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($favourites as $favourite) {
+                array_push($arrayIds, $favourite['gunId']);
+            }
+
+        } catch (PDOException $e) {
+            echo $e;
+        }
+
+        if (count($arrayIds) == 0) {
+            return $guns;
+        }
+        try {
+            foreach ($arrayIds as $id) {
+                $stmt = $this->connection->prepare('SELECT * FROM Guns WHERE gunId = :id');
+                $stmt->bindParam(':id', $id);
+                $stmt->execute();
+                $gun = $stmt->fetch(PDO::FETCH_ASSOC);
+                $typeOfGun = TypeOfGuns::tryFrom($gun['type']) ?? throw new \InvalidArgumentException("Invalid gun type");
+
+                $gunData = new Gun(
+                    $gun['gunId'],
+                    $gun['userId'],
+                    $gun['gunName'],
+                    $gun['gunDescription'],
+                    $gun['countryOfOrigin'],
+                    $gun['gunEstimatedPrice'],
+                    $typeOfGun,
+                    $gun['gunImagePath'],
+                    $gun['soundPath'],
+                    $gun['showInGunsPage'],
+                    $gun['year'] ?? 0
+                );
+                array_push($guns, $gunData);
+            }
+            return $guns;
+        } catch (PDOException $e) {
+            echo $e;
+            return [];
+        }
+    }
+
+
     public function getIntArrayFavouriteGunsByUserId(int $userId)
     {
         try {
@@ -131,6 +193,52 @@ class GunRepository extends Repository
             echo $e;
         }
     }
+
+    public function getGunsOwnedByUser(int $userId)
+    {
+        try {
+            $stmt = $this->connection->prepare('SELECT * FROM Guns WHERE userId = :userId');
+            $stmt->bindParam(':userId', $userId);
+            $stmt->execute();
+            $guns = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return array_map(function ($gunData) {
+                // Convert database data into Gun object here
+                $typeOfGun = TypeOfGuns::tryFrom($gunData['type']) ?? throw new \InvalidArgumentException("Invalid gun type");
+                $gun = new Gun(
+                    $gunData['gunId'],
+                    $gunData['userId'],
+                    $gunData['gunName'],
+                    $gunData['gunDescription'],
+                    $gunData['countryOfOrigin'],
+                    $gunData['gunEstimatedPrice'],
+                    $typeOfGun, // Now correctly an instance of TypeOfGuns
+                    $gunData['gunImagePath'],
+                    $gunData['soundPath'],
+                    $gunData['showInGunsPage'],
+                    $gunData['year'] ?? 0
+                );
+
+                return $gun;
+            }, $guns);
+        } catch (PDOException $e) {
+            echo $e;
+        }
+    }
+
+
+    public function getIDsOfGunsOwnedByUser(int $userId)
+    {
+        try {
+            $stmt = $this->connection->prepare('SELECT gunId FROM Guns WHERE userId = :userId');
+            $stmt->bindParam(':userId', $userId);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_COLUMN);
+        } catch (PDOException $e) {
+            echo $e;
+        }
+    }
+
+    #endregion
 
     public function getImagePathByGunId(int $gunId)
     {

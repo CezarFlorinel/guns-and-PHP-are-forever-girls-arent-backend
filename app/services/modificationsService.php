@@ -2,7 +2,7 @@
 namespace Services;
 
 use Repositories\ModificationsRepository;
-use Utilities\EncodeImage;
+use Utilities\Encode;
 
 class ModificationsService
 {
@@ -20,7 +20,7 @@ class ModificationsService
         $totalItems = $this->repository->getTotalModificationsCount();
 
         foreach ($modifications as $modification) {
-            $modification->imagePath = EncodeImage::encodeImageToBase64($modification->imagePath);
+            $modification->imagePath = Encode::encodeImageToBase64($modification->imagePath);
         }
 
         return [

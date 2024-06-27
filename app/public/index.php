@@ -32,7 +32,6 @@ $router->before('POST|PUT|DELETE', '/questionAndAnswers.*', 'checkJwtMiddleware'
 $router->mount('/questionAndAnswers', function () use ($router) {
     $router->get('/', 'QuestionAndAnswerController@getAll');
     $router->post('/', 'QuestionAndAnswerController@create');
-    $router->put('/(\d+)', 'QuestionAndAnswerController@update');
     $router->delete('/(\d+)', 'QuestionAndAnswerController@delete');
 });
 
@@ -52,9 +51,16 @@ $router->mount('/modifications', function () use ($router) {
     $router->get('/', 'ModificationsController@getAll');
 });
 
-$router->before('POST|PUT|DELETE', '/guns*', 'checkJwtMiddleware');
+$router->get('/get-all-guns', 'GunController@getGunsToDisplayInGunsPage'); // used to bypass the jwt middleware
+$router->before('GET|POST|PUT|DELETE', '/guns*', 'checkJwtMiddleware');
 $router->mount('/guns', function () use ($router) {
-    $router->get('/', 'GunController@getGunsToDisplayInGunsPage');
+    $router->get('/favourite-guns/(\d+)', 'GunController@getFavouriteGunsByUserID');
+    $router->get('/favourite-guns/ids/(\d+)', 'GunController@getIdsOfFavouriteGuns');
+    $router->get('/(\d+)', 'GunController@getGunById');
+    $router->get('/owned-guns/(\d+)', 'GunController@getGunsOwnedByUser');
+    $router->get('/gun-types', 'GunController@getTypesOfGuns');
+    $router->post('/favourite-guns/(\d+)/(\d+)', 'GunController@addGunToFavourites');
+    $router->delete('/favourite-guns/(\d+)/(\d+)', 'GunController@removeGunFromFavourites');
 });
 
 

@@ -1,7 +1,7 @@
 <?php
 namespace Utilities;
 
-class EncodeImage
+class Encode
 {
     public static function encodeImageToBase64($imagePath): string
     {
