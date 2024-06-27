@@ -38,9 +38,9 @@ class UserService
     }
 
 
-    public function updateUserPassword($password, $id)
+    public function updateUserPassword($newPassword, $username, $currentPassword): bool
     {
-        return $this->repository->changePassword($password, $id);
+        return $this->repository->changePassword($newPassword, $username, $currentPassword);
     }
 }
 
