@@ -19,9 +19,11 @@ class GunController extends Controller
     {
         $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
         $limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 10;
-        try {
+        $searchTerm = isset($_GET['search']) ? $_GET['search'] : '';
+        $type = isset($_GET['type']) ? $_GET['type'] : '';
 
-            $result = $this->service->getGunsToDisplayInGunsPage($page, $limit);
+        try {
+            $result = $this->service->getGunsToDisplayInGunsPage($page, $limit, $searchTerm, $type);
             $guns = $result['guns'];
             $totalItems = $result['totalItems'];
         } catch (Exception $e) {

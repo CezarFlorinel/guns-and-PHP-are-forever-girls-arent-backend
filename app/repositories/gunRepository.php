@@ -76,34 +76,48 @@ class GunRepository extends Repository
     }
 
     #region getGunsToDisplayInGunsPage
-    public function getGunsToDisplayInGunsPage(int $offset, int $limit): array
+    public function getGunsToDisplayInGunsPage(int $offset, int $limit, $searchTerm = '', $type = ''): array
     {
         try {
-            $stmt = $this->connection->prepare('SELECT * FROM Guns WHERE showInGunsPage = 1 LIMIT :limit OFFSET :offset');
+            $query = 'SELECT * FROM Guns WHERE showInGunsPage = 1';
+            $params = [];
+
+            if (!empty($searchTerm)) {
+                $query .= ' AND gunName LIKE :searchTerm';
+                $params[':searchTerm'] = '%' . $searchTerm . '%';
+            }
+
+            if (!empty($type)) {
+                $query .= ' AND type = :type';
+                $params[':type'] = $type;
+            }
+
+            $query .= ' LIMIT :limit OFFSET :offset';
+            $stmt = $this->connection->prepare($query);
             $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
             $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+
+            foreach ($params as $key => $value) {
+                $stmt->bindValue($key, $value);
+            }
+
             $stmt->execute();
             $guns = $stmt->fetchAll(PDO::FETCH_ASSOC);
             return array_map(function ($gunData) {
-                // Assuming TypeOfGuns is an enum and 'from' throws an exception if the value is not valid.
                 $typeOfGun = TypeOfGuns::tryFrom($gunData['type']) ?? throw new \InvalidArgumentException("Invalid gun type");
-
-                $gun = new Gun(
+                return new Gun(
                     $gunData['gunId'],
                     $gunData['userId'],
                     $gunData['gunName'],
                     $gunData['gunDescription'],
                     $gunData['countryOfOrigin'],
                     $gunData['gunEstimatedPrice'],
-                    $typeOfGun, // Now correctly an instance of TypeOfGuns
+                    $typeOfGun,
                     $gunData['gunImagePath'],
                     $gunData['soundPath'],
                     $gunData['showInGunsPage'],
                     $gunData['year'] ?? 0
                 );
-
-                return $gun;
-
             }, $guns);
         } catch (PDOException $e) {
             echo $e;
@@ -111,10 +125,28 @@ class GunRepository extends Repository
         }
     }
 
-    public function getTotalGunsToDisplayInGunsPage(): int
+    public function getTotalGunsToDisplayInGunsPage($searchTerm = '', $type = ''): int
     {
         try {
-            $stmt = $this->connection->prepare('SELECT COUNT(*) as count FROM Guns WHERE showInGunsPage = 1');
+            $query = 'SELECT COUNT(*) as count FROM Guns WHERE showInGunsPage = 1';
+            $params = [];
+
+            if (!empty($searchTerm)) {
+                $query .= ' AND gunName LIKE :searchTerm';
+                $params[':searchTerm'] = '%' . $searchTerm . '%';
+            }
+
+            if (!empty($type)) {
+                $query .= ' AND type = :type';
+                $params[':type'] = $type;
+            }
+
+            $stmt = $this->connection->prepare($query);
+
+            foreach ($params as $key => $value) {
+                $stmt->bindValue($key, $value);
+            }
+
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
             return (int) $result['count'];

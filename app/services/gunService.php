@@ -14,11 +14,11 @@ class GunService
         $this->repository = new GunRepository();
     }
 
-    public function getGunsToDisplayInGunsPage($page, int $limit): array
+    public function getGunsToDisplayInGunsPage($page, int $limit, $searchTerm = '', $type = ''): array
     {
         $offset = ($page - 1) * $limit;
-        $guns = $this->repository->getGunsToDisplayInGunsPage($offset, $limit);
-        $totalItems = $this->repository->getTotalGunsToDisplayInGunsPage();
+        $guns = $this->repository->getGunsToDisplayInGunsPage($offset, $limit, $searchTerm, $type);
+        $totalItems = $this->repository->getTotalGunsToDisplayInGunsPage($searchTerm, $type);
 
         foreach ($guns as $gun) {
             $gun->imagePath = Encode::encodeImageToBase64($gun->imagePath);
