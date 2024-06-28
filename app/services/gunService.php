@@ -2,6 +2,7 @@
 namespace Services;
 
 use Repositories\GunRepository;
+use Models\Gun;
 use Utilities\Encode;
 
 class GunService
@@ -56,8 +57,6 @@ class GunService
         return $guns;
     }
 
-
-
     public function getIdsOfFavouriteGuns($userId): array
     {
         return $this->repository->getIntArrayFavouriteGunsByUserId($userId);
@@ -87,7 +86,20 @@ class GunService
         return $guns;
     }
 
+    public function addGun(Gun $gun)
+    {
+        $this->repository->addGun($gun);
+    }
 
+    public function updateGun(Gun $gun)
+    {
+        $this->repository->updateGun($gun);
+    }
+
+    public function checkIfGunIsOwnedByUser($userId, $gunId)
+    {
+        return $this->repository->checkIfGunIsOwnedByUser($userId, $gunId);
+    }
 
 
 }

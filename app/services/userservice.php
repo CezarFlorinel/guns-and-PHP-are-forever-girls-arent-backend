@@ -5,7 +5,6 @@ use Repositories\UserRepository;
 
 class UserService
 {
-
     private $repository;
 
     function __construct()
@@ -37,10 +36,14 @@ class UserService
         return $this->repository->updateUser($user, $username);
     }
 
-
     public function updateUserPassword($newPassword, $username, $currentPassword): bool
     {
         return $this->repository->changePassword($newPassword, $username, $currentPassword);
+    }
+
+    public function getUserById($userId)
+    {
+        return $this->repository->returnUserById($userId);
     }
 }
 

@@ -288,6 +288,20 @@ class GunRepository extends Repository
         return $stmt->fetchColumn();
     }
 
+    public function checkIfGunIsOwnedByUser(int $userId, int $gunId): bool
+    {
+        try {
+            $stmt = $this->connection->prepare('SELECT * FROM Guns WHERE userId = :userId AND gunId = :gunId');
+            $stmt->bindParam(':userId', $userId);
+            $stmt->bindParam(':gunId', $gunId);
+            $stmt->execute();
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            echo $e;
+            return false;
+        }
+    }
+
 
     // -------------------------- delete methods --------------------------
     public function removeGunFromFavourites(int $userId, int $gunId): void
@@ -330,7 +344,8 @@ class GunRepository extends Repository
     }
 
 
-    // -------------------------- search and filter methods --------------------------
+    #region filterGunsByTypeInGunsPage
+
     public function filterGunsByTypeInGunsPage($type, $isGunPage)
     {
         try {
@@ -408,6 +423,10 @@ class GunRepository extends Repository
     }
 
 
+    #endregion
+
+
+
     // -------------------------- add methods --------------------------
     public function addGun(Gun $gun)
     {
@@ -415,6 +434,7 @@ class GunRepository extends Repository
             $query = 'INSERT INTO Guns (userId, gunName, gunDescription, countryOfOrigin, year, gunEstimatedPrice, type, gunImagePath, soundPath, showInGunsPage) VALUES (:userId, :gunName, :gunDescription, :countryOfOrigin, :year, :gunEstimatedPrice, :type, :gunImagePath, :soundPath, :showInGunsPage)';
 
             $stmt = $this->connection->prepare($query);
+            $typeOfGuns = (string) $gun->typeOfGun->value;
 
             // Bind parameters
             $stmt->bindParam(':userId', $gun->userId);
@@ -423,7 +443,7 @@ class GunRepository extends Repository
             $stmt->bindParam(':countryOfOrigin', $gun->countryOfOrigin);
             $stmt->bindParam(':gunEstimatedPrice', $gun->estimatedPrice);
             $stmt->bindParam(':year', $gun->year);
-            $stmt->bindParam(':type', $gun->typeOfGun->value); // might need to be converted, might give error
+            $stmt->bindParam(':type', $typeOfGuns); // might need to be converted, might give error
             $stmt->bindParam(':gunImagePath', $gun->imagePath);
             $stmt->bindParam(':soundPath', $gun->soundPath);
             $stmt->bindParam(':showInGunsPage', $gun->showInGunsPage, PDO::PARAM_BOOL);
@@ -469,13 +489,16 @@ class GunRepository extends Repository
               WHERE gunId = :gunId';
 
             $stmt = $this->connection->prepare($query);
+
+            $typeOfGuns = (string) $gun->typeOfGun->value;
+
             $stmt->bindParam(':gunId', $gun->gunId);
             $stmt->bindParam(':gunName', $gun->gunName);
             $stmt->bindParam(':gunDescription', $gun->description);
             $stmt->bindParam(':countryOfOrigin', $gun->countryOfOrigin);
             $stmt->bindParam(':year', $gun->year);
             $stmt->bindParam(':gunEstimatedPrice', $gun->estimatedPrice);
-            $stmt->bindParam(':type', $gun->typeOfGun->value); // might need to be converted, might give error
+            $stmt->bindParam(':type', $typeOfGuns);
             $stmt->bindParam(':gunImagePath', $gun->imagePath);
             $stmt->bindParam(':soundPath', $gun->soundPath);
             $stmt->bindParam(':showInGunsPage', $gun->showInGunsPage, PDO::PARAM_BOOL);

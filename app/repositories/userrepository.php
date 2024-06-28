@@ -9,7 +9,21 @@ use Models\User;
 
 class UserRepository extends Repository
 {
-    function checkUsernamePassword($username, $password)
+
+    public function getUserByID($id)
+    {
+        try {
+            $stmt = $this->connection->prepare("SELECT * FROM Users WHERE userId = ?");
+            $stmt->setFetchMode(PDO::FETCH_CLASS, 'Models\\User');
+            $stmt->execute([$id]);
+            $user = $stmt->fetch(PDO::FETCH_CLASS);
+            return ($user !== false) ? $user : null;
+        } catch (PDOException $e) {
+            echo $e;
+        }
+    }
+
+    public function checkUsernamePassword($username, $password)
     {
         try {
             // retrieve the user with the given username

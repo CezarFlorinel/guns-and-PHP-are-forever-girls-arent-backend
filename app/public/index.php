@@ -60,6 +60,7 @@ $router->mount('/guns', function () use ($router) {
     $router->get('/owned-guns/(\d+)', 'GunController@getGunsOwnedByUser');
     $router->get('/gun-types', 'GunController@getTypesOfGuns');
     $router->post('/favourite-guns/(\d+)/(\d+)', 'GunController@addGunToFavourites');
+    $router->post('/create', 'GunController@createGun');
     $router->delete('/favourite-guns/(\d+)/(\d+)', 'GunController@removeGunFromFavourites');
 });
 
