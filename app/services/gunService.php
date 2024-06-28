@@ -101,5 +101,14 @@ class GunService
         return $this->repository->checkIfGunIsOwnedByUser($userId, $gunId);
     }
 
+    public function getImagePathByGunId(int $gunId)
+    {
+        return $this->repository->getImagePathByGunId($gunId);
+    }
+
+    public function getSoundPathByGunId(int $gunId)
+    {
+        return $this->repository->getSoundPathByGunId($gunId);
+    }
 
 }

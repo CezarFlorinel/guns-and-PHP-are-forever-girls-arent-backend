@@ -61,6 +61,7 @@ $router->mount('/guns', function () use ($router) {
     $router->get('/gun-types', 'GunController@getTypesOfGuns');
     $router->post('/favourite-guns/(\d+)/(\d+)', 'GunController@addGunToFavourites');
     $router->post('/create', 'GunController@createGun');
+    $router->post('/update/(\d+)', 'GunController@updateGun'); // put doesn't work with form-data
     $router->delete('/favourite-guns/(\d+)/(\d+)', 'GunController@removeGunFromFavourites');
 });
 

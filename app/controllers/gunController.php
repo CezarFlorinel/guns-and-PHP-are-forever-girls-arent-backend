@@ -190,76 +190,91 @@ class GunController extends Controller
         $this->respond("Gun added successfully");
     }
 
-    public function updateGun()
+    public function updateGun($gunId)
     {
+        // Check if data is coming as multipart/form-data
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST)) {
+            $userId = filter_var($_POST['userId'], FILTER_SANITIZE_NUMBER_INT);
+            $gunName = htmlspecialchars($_POST['gunName']);
+            $description = htmlspecialchars($_POST['gunDescription']);
+            $year = filter_var($_POST['gunYear'], FILTER_SANITIZE_NUMBER_INT);
+            $estimatedPrice = filter_var($_POST['estimatedPrice'], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+            $countryOfOrigin = htmlspecialchars($_POST['gunCountry']);
+            $type = $_POST['gunType'];
+            $showInGunsPage = false;
 
-        $userId = filter_var($_POST['userId'], FILTER_SANITIZE_NUMBER_INT);
-        $gunName = htmlspecialchars($_POST['gunName']);
-        $description = htmlspecialchars($_POST['gunDescription']);
-        $year = filter_var($_POST['gunYear'], FILTER_SANITIZE_NUMBER_INT);
-        $estimatedPrice = filter_var($_POST['estimatedPrice'], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-        $countryOfOrigin = htmlspecialchars($_POST['gunCountry']);
-        $type = $_POST['gunType'];
+            if (!$userId || !$gunName || !$description || !$year || !$estimatedPrice || !$countryOfOrigin || !$type) {
+                $this->respondWithError(400, "Missing required fields");
+                return;
+            }
 
-        if (!$userId || !$gunName || !$description || !$year || !$estimatedPrice || !$countryOfOrigin || !$type) {
-            $this->respondWithError(400, "Missing required fields");
-            return;
-        }
+            $user = $this->userService->getUserById($userId);
 
-        $showInGunsPage = false;
+            if (!$user) {
+                $this->respondWithError(404, "User not found");
+                return;
+            }
 
-        $user = $this->userService->getUserById($userId);
+            if ($this->service->checkIfGunIsOwnedByUser($userId, $gunId) === false && !$user->admin) {
+                $this->respondWithError(403, "You do not have permission to update this gun");
+                return;
+            }
 
-        if (!$user) {
-            $this->respondWithError(404, "User not found");
-            return;
-        }
+            if ($user->admin) {
+                $showInGunsPage = true;
+            }
 
-        if ($user->admin) {
-            $showInGunsPage = true;
-        }
+            if (isset($_FILES['gunImage']) && $_FILES['gunImage']['error'] === UPLOAD_ERR_OK) {
+                $imagePath = $this->handleFileUpload('gunImage', 'images/guns');
+                $currentImagePath = $this->service->getImagePathByGunId($gunId);
+                if ($imagePath && $currentImagePath) {
+                    $this->deleteFile($currentImagePath);
+                }
+            } else {
+                $imagePath = $this->service->getImagePathByGunId($gunId);
+            }
 
-        if (isset($_FILES['gunImage'])) {
-            $imagePath = $this->handleFileUpload('gunImage', 'images/guns');
+            if (isset($_FILES['gunSound']) && $_FILES['gunSound']['error'] === UPLOAD_ERR_OK) {
+                $soundPath = $this->handleFileUpload('gunSound', 'sounds/weapons_sounds');
+                $currentSoundPath = $this->service->getSoundPathByGunId($gunId);
+                if ($soundPath && $currentSoundPath) {
+                    $this->deleteFile($currentSoundPath);
+                }
+            } else {
+                $soundPath = $this->service->getSoundPathByGunId($gunId);
+            }
+
+            if (!$imagePath || !$soundPath) {
+                $this->respondWithError(400, "Invalid file type or file upload failed");
+                return;
+            }
+
+            $gun = new Gun(
+                $gunId,
+                $userId,
+                $gunName,
+                $description,
+                $countryOfOrigin,
+                $estimatedPrice,
+                TypeOfGuns::tryFrom($type) ?? throw new \InvalidArgumentException("Invalid gun type"),
+                $imagePath,
+                $soundPath,
+                $showInGunsPage,
+                $year
+            );
+
+            try {
+                $this->service->updateGun($gun); // Ensure you have an updateGun method in your service and repository
+                $this->respond("Gun updated successfully");
+            } catch (Exception $e) {
+                $this->respondWithError(500, $e->getMessage());
+                return;
+            }
         } else {
-
+            $this->respondWithError(400, "Invalid request method or missing form data");
         }
-
-        if (isset($_FILES['gunSound'])) {
-            $soundPath = $this->handleFileUpload('gunSound', 'sounds/weapons_sounds');
-        } else {
-
-        }
-
-        if (!$imagePath || !$soundPath) {
-            $this->respondWithError(400, "Invalid file type or file upload failed");
-            return;
-        }
-
-        $gun = new Gun(
-            0, // gunId will be set by the database
-            $userId,
-            $gunName,
-            $description,
-            $countryOfOrigin,
-            $estimatedPrice,
-            TypeOfGuns::tryFrom($type) ?? throw new \InvalidArgumentException("Invalid gun type"),
-            $imagePath,
-            $soundPath,
-            $showInGunsPage,
-            $year
-        );
-
-        try {
-            $this->service->addGun($gun);
-        } catch (Exception $e) {
-            $this->respondWithError(500, $e->getMessage());
-            return;
-        }
-
-        $this->respond("Gun added successfully");
-
     }
+
 
     private function handleFileUpload($inputName, $directory)
     {
@@ -291,7 +306,7 @@ class GunController extends Controller
     private function deleteFile($filePath)
     {
         $projectRoot = realpath(__DIR__ . '/../../..');
-        $fullPath = $projectRoot . '/app/public' . $filePath;
+        $fullPath = $projectRoot . '/app/public/assets/' . $filePath;
         if (file_exists($fullPath)) {
             return unlink($fullPath);
         }
