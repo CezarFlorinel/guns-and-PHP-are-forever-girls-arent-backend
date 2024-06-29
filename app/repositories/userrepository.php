@@ -149,6 +149,31 @@ class UserRepository extends Repository
         return false;
     }
 
+    public function deleteUser($userId)
+    {
+        try {
+            $stmt = $this->connection->prepare("DELETE FROM Users WHERE userId = ?");
+            $stmt->execute([$userId]);
+        } catch (PDOException $e) {
+            echo $e;
+        }
+    }
+
+    public function returnAllUsers(): array
+    {
+        try {
+            $stmt = $this->connection->prepare("SELECT * FROM Users");
+            $stmt->setFetchMode(PDO::FETCH_CLASS, 'Models\\User');
+            $stmt->execute();
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            echo $e;
+        }
+        return [];
+
+    }
+
+
     // hash the password 
     function hashPassword($password)
     {

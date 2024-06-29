@@ -36,15 +36,17 @@ $router->mount('/questionAndAnswers', function () use ($router) {
 });
 
 
-// Define routes that do not require authentication
-$router->post('/users/login', 'UserController@login');
+
+$router->post('/users/login', 'UserController@login'); // this route doesn't require jwt authentication
+
 $router->before('GET|PUT|DELETE', '/user*', 'checkJwtMiddleware');
 $router->mount('/user', function () use ($router) {
+    $router->get('/get-all-users', 'UserController@getAll');
     $router->post('/', 'UserController@createUser');
     $router->put('/username/(.+)', 'UserController@updateUser');
     $router->put('/update-password', 'UserController@updatePassword');
+    $router->delete('/(\d+)', 'UserController@deleteUser');
 });
-
 
 $router->before('POST|PUT|DELETE', '/modifications*', 'checkJwtMiddleware');
 $router->mount('/modifications', function () use ($router) {
@@ -61,8 +63,9 @@ $router->mount('/guns', function () use ($router) {
     $router->get('/gun-types', 'GunController@getTypesOfGuns');
     $router->post('/favourite-guns/(\d+)/(\d+)', 'GunController@addGunToFavourites');
     $router->post('/create', 'GunController@createGun');
-    $router->post('/update/(\d+)', 'GunController@updateGun'); // put doesn't work with form-data
+    $router->post('/update/(\d+)', 'GunController@updateGun'); // put doesn't work with form-data 
     $router->delete('/favourite-guns/(\d+)/(\d+)', 'GunController@removeGunFromFavourites');
+    $router->delete('/(\d+)', 'GunController@deleteGun');
 });
 
 

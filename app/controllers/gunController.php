@@ -19,6 +19,7 @@ class GunController extends Controller
         $this->userService = new UserService();
     }
 
+    #region getMethods
     public function getGunsToDisplayInGunsPage()
     {
         $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
@@ -70,30 +71,6 @@ class GunController extends Controller
         $this->respond($ids);
     }
 
-    public function addGunToFavourites($userId, $gunId)
-    {
-        try {
-            $this->service->addGunToFavourites($userId, $gunId);
-        } catch (Exception $e) {
-            $this->respondWithError(500, $e->getMessage());
-            return;
-        }
-
-        $this->respond("Gun added to favourites");
-    }
-
-    public function removeGunFromFavourites($userId, $gunId)
-    {
-        try {
-            $this->service->removeGunFromFavourites($userId, $gunId);
-        } catch (Exception $e) {
-            $this->respondWithError(500, $e->getMessage());
-            return;
-        }
-
-        $this->respond("Gun removed from favourites");
-    }
-
     public function getGunById($id)
     {
         try {
@@ -128,6 +105,35 @@ class GunController extends Controller
 
         $this->respond($typeArray);
     }
+
+    #endregion
+
+    #region favouriteMethods
+    public function addGunToFavourites($userId, $gunId)
+    {
+        try {
+            $this->service->addGunToFavourites($userId, $gunId);
+        } catch (Exception $e) {
+            $this->respondWithError(500, $e->getMessage());
+            return;
+        }
+
+        $this->respond("Gun added to favourites");
+    }
+
+    public function removeGunFromFavourites($userId, $gunId)
+    {
+        try {
+            $this->service->removeGunFromFavourites($userId, $gunId);
+        } catch (Exception $e) {
+            $this->respondWithError(500, $e->getMessage());
+            return;
+        }
+
+        $this->respond("Gun removed from favourites");
+    }
+
+    #endregion
 
     public function createGun()
     {
@@ -273,6 +279,34 @@ class GunController extends Controller
         } else {
             $this->respondWithError(400, "Invalid request method or missing form data");
         }
+    }
+
+
+    public function deleteGun($gunId)
+    {
+
+        $gunId = filter_var($gunId, FILTER_SANITIZE_NUMBER_INT);
+
+        if (!$gunId) {
+            $this->respondWithError(400, "Invalid gun ID");
+            return;
+        }
+
+        $imagePath = $this->service->getImagePathByGunId($gunId);
+        $soundPath = $this->service->getSoundPathByGunId($gunId);
+
+        if ($this->deleteFile($imagePath) && $this->deleteFile($soundPath)) {
+            try {
+                $this->service->deleteGun($gunId);
+                $this->respond("Gun deleted successfully");
+            } catch (Exception $e) {
+                $this->respondWithError(500, $e->getMessage());
+                return;
+            }
+        } else {
+            $this->respondWithError(500, "Failed to delete gun");
+        }
+
     }
 
 

@@ -4,16 +4,19 @@ namespace Controllers;
 
 use Exception;
 use Services\UserService;
+use Services\GunService;
 
 
 class UserController extends Controller
 {
     private $service;
+    private $gunsService;
 
     // initialize services
     function __construct()
     {
         $this->service = new UserService();
+        $this->gunsService = new GunService();
     }
 
     public function login()
@@ -35,6 +38,64 @@ class UserController extends Controller
         } catch (Exception $e) {
             $this->respondWithError(500, $e->getMessage());
         }
+    }
+
+    public function getAll()
+    {
+        try {
+            $users = $this->service->getAllUsers();
+            $this->respond($users);
+        } catch (Exception $e) {
+            $this->respondWithError(500, $e->getMessage());
+        }
+    }
+
+    public function deleteUser($userId)
+    {
+        try {
+            $filteredUserId = filter_var($userId, FILTER_SANITIZE_NUMBER_INT);
+            $fileErrors = [];
+
+            $allGunsOwnedByUser = $this->gunsService->getIDsOfGunsOwnedByUser($userId);
+
+            $projectRoot = realpath(__DIR__ . '/../../..');
+            foreach ($allGunsOwnedByUser as $gunId) {
+                $imagePath = $this->gunsService->getImagePathByGunId($gunId);
+                $soundPath = $this->gunsService->getSoundPathByGunId($gunId);
+
+                foreach ([$imagePath, $soundPath] as $filePath) {
+                    if ($filePath && file_exists($projectRoot . '/app/public/assets/' . $filePath)) {
+                        if (!unlink($projectRoot . '/app/public/assets/' . $filePath)) {
+                            $fileErrors[] = 'Failed to delete ' . $filePath;
+                        }
+                    }
+                }
+            }
+
+            if (!empty($fileErrors)) {
+                $this->respondWithError(400, "Failed to delete files");
+            }
+
+            try {
+                $this->service->deleteUser($filteredUserId);
+                http_response_code(200);
+            } catch (Exception $e) {
+                $this->respondWithError(400, "Failed to delete user");
+            }
+
+        } catch (Exception $e) {
+            $this->respondWithError(500, $e->getMessage());
+        }
+    }
+
+    private function deleteFile($filePath)
+    {
+        $projectRoot = realpath(__DIR__ . '/../../..');
+        $fullPath = $projectRoot . '/app/public/assets/' . $filePath;
+        if (file_exists($fullPath)) {
+            return unlink($fullPath);
+        }
+        return false;
     }
 
     public function createUser()

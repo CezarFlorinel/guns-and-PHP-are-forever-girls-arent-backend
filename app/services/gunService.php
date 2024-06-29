@@ -106,9 +106,19 @@ class GunService
         return $this->repository->getImagePathByGunId($gunId);
     }
 
+    public function getIDsOfGunsOwnedByUser(int $userId)
+    {
+        return $this->repository->getIDsOfGunsOwnedByUser($userId);
+    }
+
     public function getSoundPathByGunId(int $gunId)
     {
         return $this->repository->getSoundPathByGunId($gunId);
+    }
+
+    public function deleteGun(int $gunId)
+    {
+        $this->repository->deleteGun($gunId);
     }
 
 }

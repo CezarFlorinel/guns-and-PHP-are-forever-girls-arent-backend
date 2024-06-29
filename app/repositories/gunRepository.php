@@ -209,8 +209,6 @@ class GunRepository extends Repository
             return [];
         }
     }
-
-
     public function getIntArrayFavouriteGunsByUserId(int $userId)
     {
         try {
@@ -256,8 +254,6 @@ class GunRepository extends Repository
             echo $e;
         }
     }
-
-
     public function getIDsOfGunsOwnedByUser(int $userId)
     {
         try {
@@ -425,9 +421,7 @@ class GunRepository extends Repository
 
     #endregion
 
-
-
-    // -------------------------- add methods --------------------------
+    #region addMethods
     public function addGun(Gun $gun)
     {
         try {
@@ -470,6 +464,7 @@ class GunRepository extends Repository
         }
     }
 
+    #endregion
 
     // -------------------------- update methods --------------------------
 
