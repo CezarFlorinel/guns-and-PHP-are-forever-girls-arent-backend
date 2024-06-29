@@ -7,15 +7,20 @@ use Models\QuestionAndAnswer;
 
 class QandARepository extends Repository
 {
-    public function addQandA(QuestionAndAnswer $questionAndAnswer): void
+    public function addQandA(QuestionAndAnswer $questionAndAnswer)
     {
         try {
             $stmt = $this->connection->prepare("INSERT INTO QuestionAndAnswer (question, answer) VALUES (:question, :answer)");
             $stmt->bindParam(':question', $questionAndAnswer->question);
             $stmt->bindParam(':answer', $questionAndAnswer->answer);
             $stmt->execute();
+
+            $questionAndAnswer->questionAndAnswerId = $this->connection->lastInsertId();
+            return $questionAndAnswer;
+
         } catch (PDOException $e) {
             echo $e;
+            return null;
         }
     }
 
@@ -36,19 +41,6 @@ class QandARepository extends Repository
         } catch (PDOException $e) {
             echo $e;
             return [];
-        }
-    }
-
-    public function editQandA(QuestionAndAnswer $questionAndAnswer): void
-    {
-        try {
-            $stmt = $this->connection->prepare("UPDATE QuestionAndAnswer SET question = :question, answer = :answer WHERE infoId = :id");
-            $stmt->bindParam(':question', $questionAndAnswer->question);
-            $stmt->bindParam(':answer', $questionAndAnswer->answer);
-            $stmt->bindParam(':id', $questionAndAnswer->questionAndAnswerId);
-            $stmt->execute();
-        } catch (PDOException $e) {
-            echo $e;
         }
     }
 

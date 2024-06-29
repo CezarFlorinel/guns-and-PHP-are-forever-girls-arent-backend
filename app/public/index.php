@@ -32,7 +32,7 @@ $router->before('POST|PUT|DELETE', '/questionAndAnswers.*', 'checkJwtMiddleware'
 $router->mount('/questionAndAnswers', function () use ($router) {
     $router->get('/', 'QuestionAndAnswerController@getAll');
     $router->post('/', 'QuestionAndAnswerController@create');
-    $router->delete('/(\d+)', 'QuestionAndAnswerController@delete');
+    $router->delete('/(\d+)', 'QuestionAndAnswerController@deleteQandA');
 });
 
 
@@ -51,6 +51,9 @@ $router->mount('/user', function () use ($router) {
 $router->before('POST|PUT|DELETE', '/modifications*', 'checkJwtMiddleware');
 $router->mount('/modifications', function () use ($router) {
     $router->get('/', 'ModificationsController@getAll');
+    $router->post('/', 'ModificationsController@create');
+    $router->post('/(\d+)', 'ModificationsController@update');
+    $router->delete('/(\d+)', 'ModificationsController@delete');
 });
 
 $router->get('/get-all-guns', 'GunController@getGunsToDisplayInGunsPage'); // used to bypass the jwt middleware
@@ -63,7 +66,7 @@ $router->mount('/guns', function () use ($router) {
     $router->get('/gun-types', 'GunController@getTypesOfGuns');
     $router->post('/favourite-guns/(\d+)/(\d+)', 'GunController@addGunToFavourites');
     $router->post('/create', 'GunController@createGun');
-    $router->post('/update/(\d+)', 'GunController@updateGun'); // put doesn't work with form-data 
+    $router->post('/update/(\d+)', 'GunController@updateGun'); // put doesn't work with form-data  ?
     $router->delete('/favourite-guns/(\d+)/(\d+)', 'GunController@removeGunFromFavourites');
     $router->delete('/(\d+)', 'GunController@deleteGun');
 });

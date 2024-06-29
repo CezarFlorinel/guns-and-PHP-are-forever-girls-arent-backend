@@ -22,7 +22,6 @@ class UserController extends Controller
     public function login()
     {
         try {
-
             $postedUser = $this->createObjectFromPostedJson("Models\\User");
 
             $user = $this->service->checkUsernamePassword($postedUser->username, $postedUser->password);
@@ -86,16 +85,6 @@ class UserController extends Controller
         } catch (Exception $e) {
             $this->respondWithError(500, $e->getMessage());
         }
-    }
-
-    private function deleteFile($filePath)
-    {
-        $projectRoot = realpath(__DIR__ . '/../../..');
-        $fullPath = $projectRoot . '/app/public/assets/' . $filePath;
-        if (file_exists($fullPath)) {
-            return unlink($fullPath);
-        }
-        return false;
     }
 
     public function createUser()
