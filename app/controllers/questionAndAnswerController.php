@@ -53,12 +53,18 @@ class QuestionAndAnswerController extends Controller
         }
 
         try {
-            $this->service->addQandA($postedObject);
+            $QandA = $this->service->addQandA($postedObject);
+
+            if (!$QandA) {
+                $this->respondWithError(500, "Failed to add QandA");
+                return;
+            }
+
         } catch (Exception $e) {
             $this->respondWithError(500, $e->getMessage());
         }
 
-        $this->respond("QandA created successfully");
+        $this->respond($QandA);
 
     }
 

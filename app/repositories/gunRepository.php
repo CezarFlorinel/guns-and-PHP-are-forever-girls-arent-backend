@@ -449,6 +449,7 @@ class GunRepository extends Repository
             return $gun;
         } catch (PDOException $e) {
             echo $e;
+
         }
     }
 

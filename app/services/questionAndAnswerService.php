@@ -18,9 +18,9 @@ class QuestionAndAnswerService
         return $this->repository->getQandAs();
     }
 
-    public function addQandA(QuestionAndAnswer $questionAndAnswer): void
+    public function addQandA(QuestionAndAnswer $questionAndAnswer)
     {
-        $this->repository->addQandA($questionAndAnswer);
+        return $this->repository->addQandA($questionAndAnswer);
     }
 
     public function deleteQandA(int $id): void

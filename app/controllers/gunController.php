@@ -187,13 +187,14 @@ class GunController extends Controller
         );
 
         try {
-            $this->service->addGun($gun);
+            $updatedGun = $this->service->addGun($gun);
+
         } catch (Exception $e) {
             $this->respondWithError(500, $e->getMessage());
             return;
         }
 
-        $this->respond("Gun added successfully");
+        $this->respond($updatedGun);
     }
 
     public function updateGun($gunId)

@@ -52,7 +52,7 @@ $router->before('POST|PUT|DELETE', '/modifications*', 'checkJwtMiddleware');
 $router->mount('/modifications', function () use ($router) {
     $router->get('/', 'ModificationsController@getAll');
     $router->post('/', 'ModificationsController@create');
-    $router->put('/(\d+)', 'ModificationsController@update');
+    $router->post('/(\d+)', 'ModificationsController@update');
     $router->delete('/(\d+)', 'ModificationsController@delete');
 });
 
@@ -66,7 +66,7 @@ $router->mount('/guns', function () use ($router) {
     $router->get('/gun-types', 'GunController@getTypesOfGuns');
     $router->post('/favourite-guns/(\d+)/(\d+)', 'GunController@addGunToFavourites');
     $router->post('/create', 'GunController@createGun');
-    $router->post('/update/(\d+)', 'GunController@updateGun'); // put doesn't work with form-data 
+    $router->post('/update/(\d+)', 'GunController@updateGun'); // put doesn't work with form-data  ?
     $router->delete('/favourite-guns/(\d+)/(\d+)', 'GunController@removeGunFromFavourites');
     $router->delete('/(\d+)', 'GunController@deleteGun');
 });

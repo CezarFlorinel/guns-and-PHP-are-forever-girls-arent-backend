@@ -64,6 +64,9 @@ class ModificationsRepository extends Repository
             $stmt->bindParam(':estimatedPrice', $modification->estimatedPrice);
             $stmt->execute();
 
+            $modification->modificationId = $this->connection->lastInsertId();
+            return $modification;
+
         } catch (PDOException $e) {
             echo $e;
         }
@@ -72,7 +75,7 @@ class ModificationsRepository extends Repository
     public function updateModification(Modification $modification): void
     {
         try {
-            $stmt = $this->connection->prepare('UPDATE Modification SET modificationName = :name, modificationImagePath = :imagePath, modificationDescription = :description, modificationEstimatedPrice = :estimatedPrice,  WHERE modificationId = :modificationId');
+            $stmt = $this->connection->prepare('UPDATE Modification SET modificationName = :name, modificationImagePath = :imagePath, modificationDescription = :description, modificationEstimatedPrice = :estimatedPrice  WHERE modificationId = :modificationId');
             $stmt->bindParam(':modificationId', $modification->modificationId);
             $stmt->bindParam(':name', $modification->name);
             $stmt->bindParam(':imagePath', $modification->imagePath);

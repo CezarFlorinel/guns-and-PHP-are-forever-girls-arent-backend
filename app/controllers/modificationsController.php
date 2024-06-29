@@ -74,7 +74,7 @@ class ModificationsController extends Controller
         $modificationCurret = $this->service->getModificationById($modificationId);
         $currentImagePath = $modificationCurret->imagePath;
 
-        if (isset($_FILES['modificationImage']) && $_FILES['gunImage']['error'] === UPLOAD_ERR_OK) {
+        if (isset($_FILES['modificationImage']) && $_FILES['modificationImage']['error'] === UPLOAD_ERR_OK) {
             $imagePath = $this->handleFileUpload('modificationImage', 'images/modifications');
             if ($imagePath === null) {
                 $this->respondWithError(400, 'Invalid image file');
@@ -119,14 +119,21 @@ class ModificationsController extends Controller
         $modification = new Modification(0, $name, $imagePath, $description, $price);
 
         try {
-            $this->service->addModification($modification);
+            $modification = $this->service->addModification($modification);
+
+            if ($modification === null) {
+                $this->respondWithError(500, 'Failed to add modification');
+                return;
+            }
+
         } catch (Exception $e) {
             $this->respondWithError(500, $e->getMessage());
             return;
         }
 
         $this->respond([
-            'message' => 'Modification added successfully'
+            'message' => 'Modification added successfully',
+            'modification' => $modification
         ]);
 
     }

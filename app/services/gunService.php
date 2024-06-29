@@ -88,7 +88,7 @@ class GunService
 
     public function addGun(Gun $gun)
     {
-        $this->repository->addGun($gun);
+        return $this->repository->addGun($gun);
     }
 
     public function updateGun(Gun $gun)

@@ -37,7 +37,7 @@ class ModificationsService
 
     public function addModification(Modification $modification)
     {
-        $this->repository->addModification($modification);
+        return $this->repository->addModification($modification);
     }
 
     public function updateModification(Modification $modification)
