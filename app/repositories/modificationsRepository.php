@@ -64,9 +64,6 @@ class ModificationsRepository extends Repository
             $stmt->bindParam(':estimatedPrice', $modification->estimatedPrice);
             $stmt->execute();
 
-            $modification->id = $this->connection->lastInsertId();
-            return $modification;
-
         } catch (PDOException $e) {
             echo $e;
         }
