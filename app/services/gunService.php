@@ -2,6 +2,7 @@
 namespace Services;
 
 use Repositories\GunRepository;
+use Models\Gun;
 use Utilities\Encode;
 
 class GunService
@@ -14,11 +15,11 @@ class GunService
         $this->repository = new GunRepository();
     }
 
-    public function getGunsToDisplayInGunsPage($page, int $limit): array
+    public function getGunsToDisplayInGunsPage($page, int $limit, $searchTerm = '', $type = ''): array
     {
         $offset = ($page - 1) * $limit;
-        $guns = $this->repository->getGunsToDisplayInGunsPage($offset, $limit);
-        $totalItems = $this->repository->getTotalGunsToDisplayInGunsPage();
+        $guns = $this->repository->getGunsToDisplayInGunsPage($offset, $limit, $searchTerm, $type);
+        $totalItems = $this->repository->getTotalGunsToDisplayInGunsPage($searchTerm, $type);
 
         foreach ($guns as $gun) {
             $gun->imagePath = Encode::encodeImageToBase64($gun->imagePath);
@@ -56,8 +57,6 @@ class GunService
         return $guns;
     }
 
-
-
     public function getIdsOfFavouriteGuns($userId): array
     {
         return $this->repository->getIntArrayFavouriteGunsByUserId($userId);
@@ -87,7 +86,39 @@ class GunService
         return $guns;
     }
 
+    public function addGun(Gun $gun)
+    {
+        $this->repository->addGun($gun);
+    }
 
+    public function updateGun(Gun $gun)
+    {
+        $this->repository->updateGun($gun);
+    }
 
+    public function checkIfGunIsOwnedByUser($userId, $gunId)
+    {
+        return $this->repository->checkIfGunIsOwnedByUser($userId, $gunId);
+    }
+
+    public function getImagePathByGunId(int $gunId)
+    {
+        return $this->repository->getImagePathByGunId($gunId);
+    }
+
+    public function getIDsOfGunsOwnedByUser(int $userId)
+    {
+        return $this->repository->getIDsOfGunsOwnedByUser($userId);
+    }
+
+    public function getSoundPathByGunId(int $gunId)
+    {
+        return $this->repository->getSoundPathByGunId($gunId);
+    }
+
+    public function deleteGun(int $gunId)
+    {
+        $this->repository->deleteGun($gunId);
+    }
 
 }
