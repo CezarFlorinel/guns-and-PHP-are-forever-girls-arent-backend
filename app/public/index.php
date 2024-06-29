@@ -32,7 +32,7 @@ $router->before('POST|PUT|DELETE', '/questionAndAnswers.*', 'checkJwtMiddleware'
 $router->mount('/questionAndAnswers', function () use ($router) {
     $router->get('/', 'QuestionAndAnswerController@getAll');
     $router->post('/', 'QuestionAndAnswerController@create');
-    $router->delete('/(\d+)', 'QuestionAndAnswerController@delete');
+    $router->delete('/(\d+)', 'QuestionAndAnswerController@deleteQandA');
 });
 
 
@@ -51,6 +51,9 @@ $router->mount('/user', function () use ($router) {
 $router->before('POST|PUT|DELETE', '/modifications*', 'checkJwtMiddleware');
 $router->mount('/modifications', function () use ($router) {
     $router->get('/', 'ModificationsController@getAll');
+    $router->post('/', 'ModificationsController@create');
+    $router->put('/(\d+)', 'ModificationsController@update');
+    $router->delete('/(\d+)', 'ModificationsController@delete');
 });
 
 $router->get('/get-all-guns', 'GunController@getGunsToDisplayInGunsPage'); // used to bypass the jwt middleware

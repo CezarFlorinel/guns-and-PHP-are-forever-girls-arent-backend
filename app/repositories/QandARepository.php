@@ -39,19 +39,6 @@ class QandARepository extends Repository
         }
     }
 
-    public function editQandA(QuestionAndAnswer $questionAndAnswer): void
-    {
-        try {
-            $stmt = $this->connection->prepare("UPDATE QuestionAndAnswer SET question = :question, answer = :answer WHERE infoId = :id");
-            $stmt->bindParam(':question', $questionAndAnswer->question);
-            $stmt->bindParam(':answer', $questionAndAnswer->answer);
-            $stmt->bindParam(':id', $questionAndAnswer->questionAndAnswerId);
-            $stmt->execute();
-        } catch (PDOException $e) {
-            echo $e;
-        }
-    }
-
     public function deleteQandA(int $id): void
     {
         try {

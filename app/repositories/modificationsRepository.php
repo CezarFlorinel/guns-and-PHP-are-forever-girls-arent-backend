@@ -72,17 +72,38 @@ class ModificationsRepository extends Repository
         }
     }
 
-    public function updateModification(Modification $modification): void  // without the image path
+    public function updateModification(Modification $modification): void
     {
         try {
-            $stmt = $this->connection->prepare('UPDATE Modification SET modificationName = :name, modificationDescription = :description, modificationEstimatedPrice = :estimatedPrice WHERE modificationId = :modificationId');
+            $stmt = $this->connection->prepare('UPDATE Modification SET modificationName = :name, modificationImagePath = :imagePath, modificationDescription = :description, modificationEstimatedPrice = :estimatedPrice,  WHERE modificationId = :modificationId');
             $stmt->bindParam(':modificationId', $modification->modificationId);
             $stmt->bindParam(':name', $modification->name);
+            $stmt->bindParam(':imagePath', $modification->imagePath);
             $stmt->bindParam(':description', $modification->description);
             $stmt->bindParam(':estimatedPrice', $modification->estimatedPrice);
             $stmt->execute();
         } catch (PDOException $e) {
             echo $e;
+        }
+    }
+
+    public function getModificationById(int $modificationId)
+    {
+        try {
+            $stmt = $this->connection->prepare('SELECT * FROM Modification WHERE modificationId = :modificationId');
+            $stmt->bindParam(':modificationId', $modificationId);
+            $stmt->execute();
+            $modification = $stmt->fetch(PDO::FETCH_ASSOC);
+            return new Modification(
+                $modification['modificationId'],
+                $modification['modificationName'],
+                $modification['modificationImagePath'],
+                $modification['modificationDescription'],
+                $modification['modificationEstimatedPrice']
+            );
+        } catch (PDOException $e) {
+            echo $e;
+            return null;
         }
     }
 
